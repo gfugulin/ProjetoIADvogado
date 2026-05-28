@@ -1,3 +1,23 @@
+"""
+Projeto: IADvogado
+Disciplina: Inteligência Artificial - 7º Período - Ciência da Computação
+Instituição: Universidade Presbiteriana Mackenzie
+Professor: Prof. Dr. Ivan Carlos Alcântara de Oliveira
+
+Integrantes:
+- Gustavo Fugulin Soares da Silva - RA 10418552
+- Otto Martins Mota - RA 10418170
+- Renan Garrido - RA 10417093
+- Rodrigo Roveratti Guerrero - RA 10417090
+
+Arquivo: iadvogado/integrations/datajud_client.py
+Síntese: Cliente de integração processual com a API Pública do DataJud (CNJ) com resolução e mapeamento de aliases de tribunais.
+
+Histórico de alterações:
+- 23/05/2026 - Grupo IADvogado - Criação/atualização do arquivo.
+- 28/05/2026 - Grupo IADvogado - Implementação da busca dinâmica via Elasticsearch no CNJ.
+"""
+
 import httpx
 import re
 import logging

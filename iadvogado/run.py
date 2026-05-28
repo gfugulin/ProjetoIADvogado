@@ -1,12 +1,22 @@
 #!/usr/bin/env python3
 """
-IADvogado - Sistema de IA para simplificação de documentos jurídicos
-Ponto de entrada principal da aplicação
+Projeto: IADvogado
+Disciplina: Inteligência Artificial - 7º Período - Ciência da Computação
+Instituição: Universidade Presbiteriana Mackenzie
+Professor: Prof. Dr. Ivan Carlos Alcântara de Oliveira
 
-Execute este script a partir da raiz do projeto:
-    python iadvogado/run.py
-Ou use o script da raiz:
-    python run_server.py
+Integrantes:
+- Gustavo Fugulin Soares da Silva - RA 10418552
+- Otto Martins Mota - RA 10418170
+- Renan Garrido - RA 10417093
+- Rodrigo Roveratti Guerrero - RA 10417090
+
+Arquivo: iadvogado/run.py
+Síntese: Ponto de entrada secundário para inicialização do servidor FastAPI do IADvogado com ajustes automáticos de path.
+
+Histórico de alterações:
+- 23/05/2026 - Grupo IADvogado - Criação/atualização do arquivo.
+- 28/05/2026 - Grupo IADvogado - Ajustes de path e caminhos absolutos.
 """
 
 import sys

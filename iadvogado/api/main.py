@@ -1,3 +1,23 @@
+"""
+Projeto: IADvogado
+Disciplina: Inteligência Artificial - 7º Período - Ciência da Computação
+Instituição: Universidade Presbiteriana Mackenzie
+Professor: Prof. Dr. Ivan Carlos Alcântara de Oliveira
+
+Integrantes:
+- Gustavo Fugulin Soares da Silva - RA 10418552
+- Otto Martins Mota - RA 10418170
+- Renan Garrido - RA 10417093
+- Rodrigo Roveratti Guerrero - RA 10417090
+
+Arquivo: iadvogado/api/main.py
+Síntese: Definição dos endpoints da API FastAPI e orquestração de upload, OCR, processamento processual e síntese de voz.
+
+Histórico de alterações:
+- 23/05/2026 - Grupo IADvogado - Criação/atualização do arquivo.
+- 28/05/2026 - Grupo IADvogado - Implementação do endpoint /process-number e integração do DataJud.
+"""
+
 from fastapi import FastAPI, UploadFile, File, Form, BackgroundTasks, HTTPException
 from fastapi.responses import JSONResponse, StreamingResponse, FileResponse
 from fastapi.staticfiles import StaticFiles

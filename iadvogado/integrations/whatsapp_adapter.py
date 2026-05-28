@@ -1,3 +1,23 @@
+"""
+Projeto: IADvogado
+Disciplina: Inteligência Artificial - 7º Período - Ciência da Computação
+Instituição: Universidade Presbiteriana Mackenzie
+Professor: Prof. Dr. Ivan Carlos Alcântara de Oliveira
+
+Integrantes:
+- Gustavo Fugulin Soares da Silva - RA 10418552
+- Otto Martins Mota - RA 10418170
+- Renan Garrido - RA 10417093
+- Rodrigo Roveratti Guerrero - RA 10417090
+
+Arquivo: iadvogado/integrations/whatsapp_adapter.py
+Síntese: Adaptador genérico para comunicação móvel e disparo de mensagens via API do WhatsApp.
+
+Histórico de alterações:
+- 23/05/2026 - Grupo IADvogado - Criação/atualização do arquivo.
+- 28/05/2026 - Grupo IADvogado - Configuração de tratamento de timeout para envio de texto.
+"""
+
 import httpx
 from ..config.config import settings
 

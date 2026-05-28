@@ -1,3 +1,23 @@
+"""
+Projeto: IADvogado
+Disciplina: Inteligência Artificial - 7º Período - Ciência da Computação
+Instituição: Universidade Presbiteriana Mackenzie
+Professor: Prof. Dr. Ivan Carlos Alcântara de Oliveira
+
+Integrantes:
+- Gustavo Fugulin Soares da Silva - RA 10418552
+- Otto Martins Mota - RA 10418170
+- Renan Garrido - RA 10417093
+- Rodrigo Roveratti Guerrero - RA 10417090
+
+Arquivo: iadvogado/services/llama_client.py
+Síntese: Cliente de simplificação textual em nuvem via API do OpenRouter com tolerância a falhas, rate-limits e fallbacks.
+
+Histórico de alterações:
+- 23/05/2026 - Grupo IADvogado - Criação/atualização do arquivo.
+- 28/05/2026 - Grupo IADvogado - Migração para nuvem com OpenRouter Llama 3.3 70B e fallbacks dinâmicos.
+"""
+
 import httpx
 import json
 import re

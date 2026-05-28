@@ -1,6 +1,21 @@
 """
-Edge TTS Worker para IADvogado
-Implementação básica do Text-to-Speech usando Microsoft Edge TTS
+Projeto: IADvogado
+Disciplina: Inteligência Artificial - 7º Período - Ciência da Computação
+Instituição: Universidade Presbiteriana Mackenzie
+Professor: Prof. Dr. Ivan Carlos Alcântara de Oliveira
+
+Integrantes:
+- Gustavo Fugulin Soares da Silva - RA 10418552
+- Otto Martins Mota - RA 10418170
+- Renan Garrido - RA 10417093
+- Rodrigo Roveratti Guerrero - RA 10417090
+
+Arquivo: iadvogado/services/edge_tts_worker.py
+Síntese: Worker de conversão de texto em fala (TTS) utilizando vozes neurais do Microsoft Edge TTS, com controle prosódico e cache em disco.
+
+Histórico de alterações:
+- 23/05/2026 - Grupo IADvogado - Criação/atualização do arquivo.
+- 28/05/2026 - Grupo IADvogado - Implementação do cache TTL inteligente para áudios MP3.
 """
 
 import edge_tts
