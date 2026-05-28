@@ -1,0 +1,27 @@
+fastapi
+uvicorn[standard]
+python-multipart
+aiofiles
+pydantic
+pydantic-settings
+pillow
+pytesseract
+# openai  # Comentado - usando Llama local
+# gTTS  # Comentado - usando Edge TTS
+httpx
+python-dotenv
+supabase
+sqlalchemy
+# Dependências para Llama 3.1 Local (Comentado - migrado para OpenRouter na nuvem)
+# torch
+# transformers
+# accelerate
+# bitsandbytes
+# sentencepiece
+# protobuf
+
+# PDF Extraction
+pypdf
+
+# Edge TTS
+edge-tts

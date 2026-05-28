@@ -1,0 +1,28 @@
+name: Build LaTeX Document
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build_pdf:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Compile LaTeX document (ignore missing images)
+        uses: xu-cheng/latex-action@v3
+        with:
+          root_file: docs/main.tex
+          latexmk_use_xelatex: true
+          args: -f
+
+      - name: Upload PDF artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: IADvogado-report
+          path: docs/main.pdf
