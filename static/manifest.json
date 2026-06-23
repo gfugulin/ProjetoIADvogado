@@ -1,0 +1,18 @@
+{
+  "name": "IADvogado - Justiça Simples",
+  "short_name": "IADvogado",
+  "description": "Simplifique documentos e processos jurídicos com Inteligência Artificial local",
+  "start_url": "/static/chatbot.html",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#8b5cf6",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%238b5cf6'/><text x='50' y='65' font-size='50' text-anchor='middle' fill='white'>⚖️</text></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
