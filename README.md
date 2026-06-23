@@ -4,7 +4,7 @@
 
 Justiça Simples é uma iniciativa tecnológica que busca democratizar o acesso à Justiça no Brasil por meio de Inteligência Artificial. A proposta consiste em um sistema capaz de traduzir documentos jurídicos — petições, decisões e andamentos processuais — em linguagem clara e acessível para a população.
 
-A solução é acessível via WhatsApp e, futuramente, por meio de aplicativo dedicado, oferecendo respostas em formato texto e áudio para aumentar a inclusão de pessoas com baixa escolaridade, idosos e cidadãos com deficiência visual.
+A solução é acessível por meio de um aplicativo web dedicado (PWA) no formato de Chat Conversacional (estilo WhatsApp) e, futuramente, por meio de integração direta com aplicativos de mensageria, oferecendo respostas em formato texto e áudio para aumentar a inclusão de pessoas com baixa escolaridade, idosos e cidadãos com deficiência visual ou motora.
 
 O projeto tem como foco principal reduzir as barreiras de entendimento que afastam os cidadãos de seus direitos, promovendo transparência e cidadania. Além disso, a iniciativa está alinhada aos seguintes Objetivos de Desenvolvimento Sustentável (ODS) da ONU:
 
@@ -47,13 +47,13 @@ O projeto tem como foco principal reduzir as barreiras de entendimento que afast
 
 ## Arquitetura em Alto Nível
 
-1. **Interação**: WhatsApp (usando API do tipo Evolution ou similar) como principal canal de comunicação.  
-2. **Backend**: FastAPI em Python, com banco de dados local SQLite (`database.db`).  
+1. **Interação**: Web App PWA dedicado em formato de Chat Conversacional (com pílulas cognitivas, entrada de voz, acessibilidade visual/motora e histórico local persistido) e estrutura preparada para integração de canais de mensageria (WhatsApp).  
+2. **Backend**: FastAPI em Python, servindo o PWA e APIs, com banco de dados local SQLite (`database.db`).  
 3. **Processamento**:  
    - Extração nativa de texto de PDFs (`pypdf`) e OCR para imagens escaneadas (`Pytesseract`);  
-   - **LLM na Nuvem (OpenRouter)**: Uso do modelo de última geração **Llama 3.3 70B Instruct** para simplificação da linguagem jurídica, com lista inteligente de fallback gratuito e tratamento de rate-limits;  
+   - **LLM na Nuvem (OpenRouter)**: Uso do modelo de última geração **Llama 3.3 70B Instruct** com prompts adaptativos dependendo do nível cognitivo (Fácil, Padrão ou Técnico) e contingências de fallback dinâmico;  
    - **TTS para conversão em áudio**: Microsoft Edge TTS (vozes neurais brasileiras de altíssima qualidade).  
-4. **Entrega**: resposta clara em texto e/ou áudio enviada ao usuário em ritmo rápido (por exemplo, em menos de dois minutos).
+4. **Entrega**: resposta estruturada em balões de chat e player de áudio integrado simulando nota de voz, com feedback háptico móvel.
 
 ### **Mudanças na Arquitetura (2026)**
 - **Migração de IA Local para OpenRouter Cloud**: Inferência assíncrona usando o modelo robusto Llama 3.3 70B. Evita a necessidade de hardware local potente (GPU dedicada com 6GB+ VRAM, PyTorch, Transformers, etc.), reduzindo o tempo de setup local e melhorando radicalmente a qualidade da simplificação.
@@ -65,30 +65,34 @@ O projeto tem como foco principal reduzir as barreiras de entendimento que afast
 ## Status de Implementação
 
 ### ✅ **Funcionalidades Implementadas**
+- Redesenho Conversacional Chat-First: interface focada em calor humano com paleta acolhedora, sem emojis e com ícones SVG inline
+- Acessibilidade Digital (WCAG 2.1 POUR): navegação por teclado contrastante (`:focus-visible`), tags `tabindex` e suporte a leitores de tela
+- Entrada por Voz Nativa (Speech-to-Text) com Web Speech API local integrada ao campo de texto do chat
+- Níveis de Tradução IA: pílulas de seleção de complexidade linguística (Fácil, Padrão, Técnico) no chat e prompts dinâmicos
+- Feedback háptico (Vibration API) para eventos de sucesso em dispositivos móveis
+- Suporte a instalação e caching offline PWA (Service Worker e Manifesto integrados ao FastAPI)
+- Histórico de conversas completas agrupadas por threads persistidas em local storage
 - Upload e processamento inteligente de documentos (PDF nativo e imagens)
 - Extração de texto selecionável direta com `pypdf`
 - OCR com Pytesseract (português) para imagens e PDFs escaneados
-- Consulta processual real integrada à **API Pública do DataJud/CNJ** (com mapeamento automático de tribunais)
+- Consulta processual real integrada à **API Pública do DataJud/CNJ** (com mapeamento de tribunais)
 - Simplificação de texto jurídico na nuvem via OpenRouter (Llama 3.3 70B-Instruct)
-- Estrutura de resposta em 3 blocos obrigatórios (O que aconteceu, O que significa, O que fazer agora)
-- Geração de áudio (TTS) com vozes neurais brasileiras via Edge TTS e cache em disco
+- Estrutura de resposta em 4 blocos (O que aconteceu, O que significa, Próximos passos, Importante/Disclaimer)
+- Geração de áudio (TTS) com vozes neurais brasileiras via Edge TTS, cache e player integrado
 - Armazenamento local robusto em SQLite (`database.db`)
 - Integração WhatsApp (estrutura pronta)
-- Disclaimers legais obrigatórios
 
 ### ⚠️ **Funcionalidades Parcialmente Implementadas**
 - Envio de áudio via WhatsApp
 - Logs de sistema (básico)
 
 ### ❌ **Funcionalidades Pendentes**
-- Autenticação de usuários
-- Histórico de consultas
-- Sistema de preferências
+- Autenticação de usuários (ex: Supabase/OTP)
 - Notificações automáticas
-- Sistema de feedback
+- Sistema de feedback de qualidade
 - Monitoramento robusto
 
-### 📊 **Progresso Geral: ~75% implementado**
+### 📊 **Progresso Geral: ~90% implementado**
 
 ---
 

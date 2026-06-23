@@ -7,7 +7,7 @@ cd iadvogado
 pip install -r requirements.txt
 ```
 
-## Passo 2: Configurar Variáveis de Ambiente (Opcional)
+## Passo 2: Configurar Variáveis de Ambiente
 
 Crie um arquivo `.env` na raiz do projeto com as configurações:
 
@@ -16,7 +16,11 @@ Crie um arquivo `.env` na raiz do projeto com as configurações:
 cp iadvogado/config/env_example.txt .env
 ```
 
-**Nota**: Para teste básico, você pode pular esta etapa. O sistema funcionará com valores padrão.
+Abra o arquivo `.env` e configure as seguintes variáveis essenciais:
+- `OPENROUTER_API_KEY`: Necessária para que a IA (Llama 3.3 via nuvem) gere as simplificações de textos. Sem ela, o sistema responderá com textos estáticos de fallback.
+- `DATAJUD_API_KEY`: Necessária para consultar processos reais pelo número do processo (integração CNJ).
+
+**Nota**: Embora o sistema inicie sem essas chaves usando fallbacks locais, a experiência real do chatbot requer que essas duas chaves estejam devidamente preenchidas.
 
 ## Passo 3: Iniciar o Servidor
 

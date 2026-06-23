@@ -31,7 +31,7 @@
 
 **3. Resumo**
 
-O projeto IADvogado propõe o desenvolvimento de uma solução baseada em Inteligência Artificial Generativa para simplificação de textos jurídicos curtos, como decisões judiciais, despachos, comunicados processuais e trechos de peças jurídicas. O problema abordado decorre da dificuldade de compreensão da linguagem jurídica por pessoas sem formação em Direito, o que pode gerar barreiras de acesso à informação, insegurança na interpretação de documentos e afastamento do cidadão em relação ao sistema de Justiça. A solução utiliza modelos de linguagem de grande porte, executados localmente, para transformar textos densos em explicações claras, organizadas e acessíveis, sem substituir a atuação de profissionais jurídicos. A implementação atual contempla uma arquitetura modular em Python, com API em FastAPI, módulo de OCR, cliente de modelo de linguagem local, geração de áudio por Text-to-Speech, persistência planejada em Supabase e integração inicial com WhatsApp. O projeto também considera aspectos éticos e regulatórios, como privacidade, minimização de dados, risco de alucinação e transparência sobre os limites da IA. Como resultado, o trabalho apresenta um protótipo funcional em desenvolvimento, um fluxo metodológico de coleta, preparação e simplificação de textos, além de uma avaliação técnica e ética da solução. A contribuição principal do projeto está em demonstrar como LLMs podem ser aplicados de forma responsável à simplificação de linguagem jurídica, promovendo acessibilidade e inclusão digital.
+O projeto IADvogado propõe o desenvolvimento de uma solução baseada em Inteligência Artificial Generativa para simplificação de textos jurídicos curtos, como decisões judiciais, despachos, comunicados processuais e trechos de peças jurídicas. O problema abordado decorre da dificuldade de compreensão da linguagem jurídica por pessoas sem formação em Direito, o que pode gerar barreiras de acesso à informação, insegurança na interpretação de documentos e afastamento do cidadão em relação ao sistema de Justiça. A solução utiliza modelos de linguagem de grande porte na nuvem via OpenRouter, de forma assíncrona e resiliente, para transformar textos densos em explicações claras, organizadas e acessíveis, sem substituir a atuação de profissionais jurídicos. A implementação atual contempla uma arquitetura modular em Python, com API em FastAPI, módulo de OCR (com extração pypdf de PDFs nativos), cliente de modelo de linguagem cloud (Llama 3.3 70B), geração de áudio por Text-to-Speech com cache local, persistência em banco SQLite local e integração inicial com WhatsApp. O projeto também considera aspectos éticos e regulatórios, como privacidade, minimização de dados, risco de alucinação e transparência sobre os limites da IA. Como resultado, o trabalho apresenta um protótipo funcional, um fluxo metodológico de coleta, preparação e simplificação de textos, além de uma avaliação técnica e ética da solução. A contribuição principal do projeto está em demonstrar como LLMs podem ser aplicados de forma responsável à simplificação de linguagem jurídica, promovendo acessibilidade e inclusão digital.
 
 **Palavras-chave:** Inteligência Artificial; Processamento de Linguagem Natural; Modelos de Linguagem; Direito; Acessibilidade; Simplificação de Texto.
 
@@ -47,7 +47,7 @@ Com o avanço do Processamento de Linguagem Natural (PLN) e dos modelos de lingu
 
 O projeto se justifica pela necessidade de tornar informações jurídicas mais compreensíveis para a população leiga. A falta de clareza em documentos jurídicos pode gerar dependência excessiva de terceiros, dificuldade de acompanhamento processual e insegurança na interpretação de comunicações oficiais. Ao propor uma solução de simplificação textual, o IADvogado busca contribuir para a inclusão digital e para a democratização do acesso à informação jurídica.
 
-A escolha por uma arquitetura com processamento local também se justifica pela natureza sensível dos dados jurídicos. Mesmo quando documentos são públicos, podem conter dados pessoais, nomes, números de processos, endereços ou informações de partes envolvidas. Por isso, o projeto valoriza privacidade, minimização de dados e controle sobre o processamento, em conformidade com os princípios da Lei Geral de Proteção de Dados (LGPD).
+A escolha por uma arquitetura em nuvem com fallbacks dinâmicos também se justifica pela natureza sensível dos dados jurídicos. Mesmo quando documentos são públicos, podem conter dados pessoais, nomes, números de processos, endereços ou informações de partes envolvidas. Por isso, o projeto valoriza privacidade, minimização de dados e controle sobre o processamento, em conformidade com os princípios da Lei Geral de Proteção de Dados (LGPD).
 
 **4.3 Objetivo**
 
@@ -123,9 +123,9 @@ A presente pesquisa baseia-se e expande o conhecimento consolidado em diversos e
 |:---|:---|:---|
 | Garimella et al. (2022) | Discute desafios técnicos da simplificação textual no domínio jurídico e a escassez de bases de dados paralelas. | Fundamenta metodologicamente as barreiras da reescrita semântica sem perda de precisão legal. |
 | Alves et al. (2023) | Aborda a simplificação automática de textos jurídicos em língua portuguesa empregando aprendizado de máquina. | Alinha-se diretamente ao objetivo principal de desmistificar o "juridiquês" brasileiro por meio de modelos algorítmicos. |
-| Chalkidis et al. (2020) | Introduz o LEGAL-BERT e analisa a necessidade premente de adaptação de modelos generéricos ao nicho do Direito. | Justifica a adoção de estratégias avançadas de prompt e a preferência por modelos densos com alta capacidade inferencial (como Llama 3.1 8B). |
+| Chalkidis et al. (2020) | Introduz o LEGAL-BERT e analisa a necessidade premente de adaptação de modelos generéricos ao nicho do Direito. | Justifica a adoção de estratégias avançadas de prompt e a preferência por modelos densos com alta capacidade inferencial (como Llama 3.3 70B via OpenRouter). |
 | Silveira et al. (2023) | Apresenta e valida o LegalBERT-pt, modelo fundacional do domínio jurídico em português brasileiro. | Contextualiza a solução com a realidade linguística nacional, abrindo portas para *fine-tuning* futuro do LLM adotado no projeto. |
-| Dettmers et al. (2023) | Propõe o método QLoRA para *fine-tuning* eficiente e quantização de modelos LLM. | Fornece a justificativa técnica para executar o LLM em hardware local com 4-bits, democratizando a arquitetura sem perda expressiva de acurácia. |
+| Dettmers et al. (2023) | Propõe o método QLoRA para *fine-tuning* eficiente e quantização de modelos LLM. | Fornece bases teóricas de quantização e eficiência no processamento de linguagem que inspiraram a otimização de infraestrutura. |
 
 **6. Metodologia e Resultados Esperados**
 
@@ -172,16 +172,17 @@ O IADvogado adota uma arquitetura inspirada em preceitos de modularidade (Portas
 | **Camada** | **Arquivo/Módulo** | **Função** |
 |:---|:---|:---|
 | Entrada/API | api/main.py e run.py | Exposição de endpoints HTTP e orquestração do fluxo principal via FastAPI. |
-| Modelo de linguagem | services/llama_client.py | Comunicação com o LLM local, geração de simplificações e tratamento estruturado de saídas inconsistentes. |
-| OCR | services/ocr_worker.py | Extração de texto de imagens usando Pytesseract. |
+| Modelo de linguagem | services/llama_client.py | Comunicação com o LLM na nuvem via OpenRouter, geração de simplificações e tratamento estruturado de saídas inconsistentes. |
+| OCR | services/ocr_worker.py | Extração de texto de imagens usando Pytesseract e extração nativa de PDFs selecionáveis usando pypdf. |
 | TTS | services/edge_tts_worker.py | Geração de áudio em português a partir da explicação simplificada com uso do Edge TTS. |
 | Integração | integrations/whatsapp_adapter.py | Estrutura para envio de respostas via WhatsApp (Evolution API). |
 | Configuração e core | config/config.py, core/models.py, utils/utils.py | Modelos de dados, configurações, validações (Pydantic) e funções auxiliares. |
-| Persistência | Supabase e cache local | Persistência planejada de registros via Supabase e cache local de arquivos MP3. |
+| Persistência | SQLite local e cache local | Persistência de registros via SQLite local e cache local de arquivos MP3. |
+| Frontend Conversátil e PWA | static/chatbot.html, sw.js, manifest.json | Interface conversacional de chat-first com pílulas cognitivas, entrada por voz, acessibilidade por teclado, feedback háptico e cache offline. |
 
 A Figura 1 representa, em formato textual, o fluxo geral do sistema:
 
-| Usuário/Cliente -> API FastAPI -> Extração/OCR -> Pré-processamento -> LLM Local -> Parser/Fallback -> Resposta em texto -> TTS -> Áudio/Integração |
+| Usuário/Cliente -> API FastAPI -> Extração/OCR -> Pré-processamento -> LLM OpenRouter -> Parser/Fallback -> Resposta em texto -> TTS -> Áudio/Integração |
 |----|
 
 **6.6 Estratégia de Prompt**
@@ -251,7 +252,7 @@ Essas etapas alinham-se profundamente com o escopo metodológico delimitado, tra
 
 **7.1 Estado Atual do Desenvolvimento**
 
-O IADvogado encontra-se em estágio avançado e extremamente estável de desenvolvimento infraestrutural (estimado em aproximadamente 75%). A API e os componentes principais executam plenamente inferências assíncronas do Llama 3.3 via OpenRouter com fallback inteligente de modelos gratuitos na nuvem, extração direta de PDFs selecionáveis via `pypdf`, OCR resiliente para imagens via Pytesseract, e TTS performático munido de cache em sistema de arquivos local. A busca processual real via integração oficial com a API Pública do DataJud/CNJ está 100% operacional. As lacunas ainda existentes limitam-se ao controle restrito de identidade e à autenticação de sessões de usuários.
+O IADvogado encontra-se em estágio avançado e extremamente estável de desenvolvimento (estimado em aproximadamente 90%). A API e os componentes principais executam plenamente inferências assíncronas do Llama 3.3 via OpenRouter com fallback inteligente de modelos gratuitos na nuvem, extração direta de PDFs selecionáveis via `pypdf`, OCR resiliente para imagens via Pytesseract, e TTS performático munido de cache em sistema de arquivos local. A busca processual real via integração oficial com a API Pública do DataJud/CNJ está 100% operacional. O frontend foi totalmente reestruturado sob a arquitetura de Chat Conversacional de alto contraste com temas responsivos, pílulas cognitivas e suporte completo de acessibilidade POUR (teclado, fala e vibração háptica). As lacunas ainda existentes limitam-se ao controle restrito de identidade e à autenticação de sessões de usuários.
 
 *Tabela 6 - Síntese do estado atual do sistema*
 
@@ -265,6 +266,10 @@ O IADvogado encontra-se em estágio avançado e extremamente estável de desenvo
 | Consulta por número de processo | Implementado | Busca processual ativa integrada à API Pública do DataJud/CNJ com mapeamento de tribunais. |
 | Autenticação e consentimento | Pendente | Necessário para maior conformidade à LGPD e histórico de usuários em produção. |
 | Logs e observabilidade | Parcial | Integração de logs estruturados nos serviços de rede e controle de exceções. |
+| Interface e Visual Identity | Implementado | Redesenho Conversacional Chat-First (tons de azul/creme), eliminação de emojis, inclusão de ícones SVG e banner de privacidade/LGPD. |
+| Acessibilidade Digital | Implementado | Navegação por teclado (:focus-visible, tabindex="0"), entrada por voz nativa (Speech-to-Text via Web Speech API) e suporte a leitores de tela. |
+| Níveis de Tradução | Implementado | Pills de seleção de complexidade de simplificação (Fácil, Padrão, Técnico) integradas às rotas e prompts adaptativos da LLM. |
+| Feedback Sensorial/Háptico | Implementado | Vibração háptica física (Vibration API) para ações mobile de sucesso (cópia, respostas, etc.). |
 
 **7.2 Resultados do Dataset e Análise Exploratória**
 
@@ -313,8 +318,8 @@ Amparado nos atributos da ISO/IEC 25010 (ISO/IEC, 2011), o protótipo alcança g
 
 | **Atributo** | **Avaliação** | **Discussão** |
 |:---|:---|:---|
-| Adequação funcional | Parcial | O sistema contempla o fluxo de simplificação primário, aguardando complementos para uso processual dinâmico. |
-| Eficiência de desempenho | Boa, com ressalvas | O cache (hit/miss) garante latências na casa de milissegundos para repetições, enquanto o cold-start de IA em GPU segue tolerável. |
+| Adequação funcional | Excelente | O sistema contempla o fluxo de simplificação primário de uploads e a busca síncrona por número de processo CNJ integrada ao DataJud. |
+| Eficiência de desempenho | Excelente | O cache (hit/miss) garante latências na casa de milissegundos para repetições, e o uso de OpenRouter elimina a latência e o cold-start de GPU local. |
 | Compatibilidade | Parcial | O envio via mensageria móvel carece do encapsulamento pleno de áudio. |
 | Segurança | Ponto de atenção | A exigência protetiva do processamento penal ou cível demanda autenticação OTP sólida (ainda pendente). |
 | Manutenibilidade | Alta | Aplicação irrestrita de abstrações Python (Ports and Adapters). |
@@ -323,7 +328,7 @@ Amparado nos atributos da ISO/IEC 25010 (ISO/IEC, 2011), o protótipo alcança g
 
 O uso de redes neurais generativas acarreta a probabilidade não nula do fenômeno da alucinação. O IADvogado endereça esse risco contornando a arquitetura em dois vieses: via *prompt design* restritivo e por meio de forte desambiguação de responsabilidade nos disclaimers. 
 
-O segundo vetor incide na integridade e privacidade da LGPD. Processos judiciais abrigam detalhes delicados; logo, o cômputo fechado da informação na *Edge AI* e políticas assíncronas de expurgo na persistência (30 dias) revelam-se práticas fulcrais estabelecidas em projeto. Por fim, assevera-se em todas as vias a impossibilidade do subsídio humano, enaltecendo a advocacia autêntica e inibindo a negligência informacional da base usuária.
+O segundo vetor incide na integridade e privacidade da LGPD. Processos judiciais abrigam detalhes delicados; logo, a criptografia no transporte HTTPS sem retenção no provedor de nuvem (OpenRouter) e as políticas de expurgo local de dados no SQLite (30 dias) revelam-se práticas fulcrais estabelecidas em projeto. Por fim, assevera-se em todas as vias a impossibilidade do subsídio humano, enaltecendo a advocacia autêntica e inibindo a negligência informacional da base usuária.
 
 **7.7 Endereço GitHub e Endereço do Vídeo no YouTube**
 

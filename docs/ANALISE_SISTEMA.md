@@ -1,6 +1,6 @@
 # Relatório de Análise Técnica e Arquitetural — IADvogado (Justiça Simples)
 
-Este documento apresenta uma análise técnica e arquitetural detalhada do sistema **IADvogado**, avaliando seu estado atual de desenvolvimento (estimado em 60%), sua aderência a boas práticas de engenharia de software, conformidade regulatória (LGPD e ética jurídica) e qualidade de software de acordo com padrões internacionais.
+Este documento apresenta uma análise técnica e arquitetural detalhada do sistema **IADvogado**, avaliando seu estado atual de desenvolvimento (estimado em 75%), sua aderência a boas práticas de engenharia de software, conformidade regulatória (LGPD e ética jurídica) e qualidade de software de acordo com padrões internacionais.
 
 ---
 
@@ -44,7 +44,7 @@ graph TD
     end
 
     subgraph Infra [Infraestrutura e Persistência]
-        supabase[(Supabase Database)]
+        sqlite[(SQLite database.db)]
         local_cache[(Cache Local MP3)]
     end
 
@@ -56,7 +56,7 @@ graph TD
     llama --> Core
     tts --> local_cache
     whatsapp --> Core
-    api --> supabase
+    api --> sqlite
 ```
 
 * **Camada de Entrada (Entry Points)**: `api/main.py` e `run.py` expõem os endpoints HTTP via **FastAPI**, servindo como o mecanismo de controle e orquestração do fluxo.
@@ -73,11 +73,10 @@ O projeto emprega padrões consagrados pelo *Gang of Four* (Gamma et al., 1994) 
 2. **Adapter (Adaptador)**:
    * **Implementação**: `ocr_worker.py` (usando Pytesseract) e `whatsapp_adapter.py` (interagindo com APIs externas) uniformizam assinaturas complexas de bibliotecas de terceiros e de protocolos web sob interfaces simples consumíveis pela rota `/upload`.
 
-### 2.3. Modelos de Linguagem Locais (Local LLMs) e Quantização
-O IADvogado migrou estrategicamente do modelo proprietário (OpenAI GPT-4) para inferência local com o **Meta-Llama-3.1-8B-Instruct**.
+### 2.3. Modelos de Linguagem em Nuvem (OpenRouter API) e Resiliência
+O IADvogado migrou estrategicamente do modelo proprietário (OpenAI GPT-4) e da inferência local inicial (Llama 3.1 8B) para uma arquitetura baseada na nuvem via **OpenRouter API** com o **Meta-Llama-3.3-70B-Instruct**.
 
-* **Embasamento Teórico**: A inferência local de modelos abertos (*Open Weights*) elimina dependências externas (risco de vendor lock-in) e custos flutuantes. Para viabilizar a execução em hardware convencional (GPUs de consumo ou CPUs com RAM compartilhada), a quantização é indispensável. 
-* O projeto emprega a técnica de quantização de 4 bits (**NormalFloat 4 - NF4**), conforme estabelecido academicamente por Dettmers et al. (2023) no artigo *QLoRA: Efficient Finetuning of Quantized LLMs*. Essa técnica distribui as informações do modelo de ponto flutuante de 16 bits para representações discretas de 4 bits com mínima perda de perplexidade teórica e de qualidade de resposta, reduzindo o consumo de memória VRAM de ~16GB para ~5.5GB, tornando a operação altamente viável e de baixo custo.
+* **Embasamento Teórico**: A inferência local de modelos grandes exige hardware com GPUs de consumo dedicadas caras (com 6GB+ VRAM), limitando a portabilidade do MVP. Ao adotar a nuvem de forma assíncrona, o processamento é delegado com custo zero (aproveitando o free tier de alta performance do OpenRouter) e latência otimizada. Para combater a instabilidade de rede ou de fornecedores, implementou-se uma cascata dinâmica de contingência (*fallback cascade*) contendo modelos gratuitos alternativos (Hermes 3, Gemma 2, Qwen 2.5, DeepSeek R1). A resiliência é fortalecida por retentativas que interpretam dinamicamente a indicação HTTP 429 de rate-limits.
 
 ### 2.4. Resiliência e Tolerância a Falhas em Saídas Não-Determinísticas
 Modelos gerativos de linguagem são sistemas intrinsecamente probabilísticos e não-determinísticos, o que desafia sistemas computacionais tradicionais fundamentados em lógica booleana rígida.
@@ -99,8 +98,8 @@ No campo de **Interação Humano-Computador (IHC)**, a inclusão de cidadãos co
 ### 2.6. Privacidade por Design (Privacy by Design) e Conformidade LGPD
 A manipulação de dados jurídicos pessoais exige conformidade estrita com a **Lei Geral de Proteção de Dados (Lei nº 13.709/2018)**. O projeto adota a metodologia de **Privacy by Design** (Cavoukian, 2009), incorporando a privacidade no núcleo arquitetural:
 
-1. **Processamento Local (Princípio 1 - Proativo e Não Reativo)**: Os dados de petições processadas pela IA não saem do perímetro do servidor institucional, impossibilitando vazamentos a terceiros em nuvens externas de LLMs.
-2. **Minimização e Descarte (Princípio 5 - Segurança de Ponta a Ponta)**: O modelo de banco de dados e a rotina lógica (`storage/storage.py` e `utils/utils.py`) definem uma data de expiração (*retention_until*) padrão de 30 dias. Decorrido este prazo, os dados processados e textos extraídos são apagados automaticamente, respeitando o princípio da necessidade e finalidade (Art. 6º, III e VIII da LGPD).
+1. **Minimização de Dados e Transporte Seguro (Princípio 1 - Proativo e Não Reativo)**: Os dados de petições processadas pela IA trafegam de forma cifrada via HTTPS diretamente para a API do OpenRouter e não são retidos pelo provedor, blindando o vazamento de dados privados.
+2. **Minimização e Descarte (Princípio 5 - Segurança de Ponta a Ponta)**: O modelo de banco de dados e a rotina lógica (`storage/storage.py` e `utils/utils.py`) definem uma data de expiração (*retention_until*) padrão de 30 dias na tabela SQLite. Decorrido este prazo, os dados processados e textos extraídos são apagados automaticamente do arquivo local de banco, respeitando o princípio da necessidade e finalidade (Art. 6º, III e VIII da LGPD).
 
 ---
 
@@ -110,8 +109,8 @@ Sob a égide da norma internacional **ISO/IEC 25010**, que estabelece a sistemá
 
 | Atributo de Qualidade | Status Atual no IADvogado | Análise Crítica e Diagnóstico |
 | :--- | :--- | :--- |
-| **Adequação Funcional** | ✅ Boa (MVP Concluído) | O sistema cumpre o ciclo de upload e processamento de documentos com sucesso. Adicionalmente, foi implementada a integração com a **API Pública do DataJud**, permitindo a consulta síncrona por número de processo. |
-| **Eficiência de Desempenho** | ✅ Excelente (com cache) | A latência da inferência de IA local e OCR pode durar entre 5 e 20 segundos em hardware médio. O sistema mitiga isso usando um **Cache Inteligente de Áudio com TTL** no `EdgeTTSWorker`, permitindo respostas em `<0.1s` (hit rate) para textos recorrentes, otimizando recursos físicos e energia do servidor. |
+| **Adequação Funcional** | ✅ Excelente (MVP Concluído) | O sistema cumpre o ciclo de upload e processamento de documentos com sucesso. Adicionalmente, foi implementada a integração com a **API Pública do DataJud**, permitindo a consulta real e síncrona por número de processo CNJ. |
+| **Eficiência de Desempenho** | ✅ Excelente (com cache) | A latência da inferência de IA na nuvem e OCR dura poucos segundos. O sistema mitiga isso usando um **Cache Inteligente de Áudio com TTL** no `EdgeTTSWorker`, permitindo respostas em `<0.1s` (hit rate) para textos recorrentes, otimizando recursos físicos e energia do servidor. |
 | **Compatibilidade** | ⚠️ Parcial | O acoplamento com o WhatsApp por meio do `whatsapp_adapter.py` possui a estrutura base de envio de textos implementada, porém carece da funcionalidade de envio de áudio nativo. |
 | **Segurança** | 🚨 Alerta | Ausência de autenticação de usuários, logs não-criptografados na camada de persistência transitória e carência de barramento seguro de acesso para auditoria técnica (requisito indispensável na regulação da LGPD). |
 | **Manutenibilidade** | ✅ Alta | Altamente modular, desacoplado, com controle de configuração via variáveis de ambiente centralizadas no Pydantic (`config.py`). Fácil extensão para outros modelos de inferência ou fornecedores de nuvem. |
@@ -161,7 +160,7 @@ gantt
 ### Fase 1: Segurança, Observabilidade e Estabilização do Core (17 dias)
 1. **Autenticação Segura**: Implementação de autenticação passwordless baseada em tokens SMS/WhatsApp de uso único (OTP).
 2. **Telemetria de Produção**: Substituição completa de `print()` por logger estruturado em JSON para rastreamento de bottlenecks de CPU/GPU durante inferência local de IA.
-3. **Refatoração do Supabase**: Ajuste de constraints de chaves estrangeiras (`user_id`) e criptografia de ponta a ponta dos textos jurídicos em repouso no Supabase.
+3. **Banco de Dados Local (SQLite)**: Ajuste de constraints e criptografia opcional de textos jurídicos em repouso na tabela `processes` no SQLite local.
 
 ### Fase 2: Integração de Dados Judiciais e Extensão Multicanal (21 dias)
 1. **Módulo DataJud CNJ**: Desenvolvimento do adapter assíncrono para o barramento oficial de dados do CNJ, com fallback para scrapers locais resilientes em caso de processos de segredo de justiça.

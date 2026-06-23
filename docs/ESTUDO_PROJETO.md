@@ -126,12 +126,13 @@ iadvogado/                  # Código-fonte da aplicação
   
 - `GET /tts/cache/info` - Informações do cache
   
-- `POST /tts/cache/clear` - Limpar cache
-
-#### Endpoints Parciais ⚠️
 - `POST /process-number` - Consulta por número de processo
-  - **Status**: Retorna 501 (Not Implemented)
-  - **Nota**: Placeholder para integração com APIs judiciais
+  - Suporta: Números no formato padrão CNJ
+  - Integração: API Pública do DataJud/CNJ (mapeamento dinâmico de tribunais)
+  - Retorna: Texto simplificado dos últimos andamentos em 3 blocos + disclaimer
+  - Opções: `as_audio`, `phone_number`, `user_id`
+
+- `POST /tts/cache/clear` - Limpar cache
 
 #### Funcionalidades da API
 
@@ -157,43 +158,39 @@ O que fazer agora: [próximos passos]
 
 ---
 
-### 2. Processamento com IA (Llama 3.1)
+### 2. Processamento com IA (OpenRouter Cloud)
 
 #### Implementação
 
 **Arquivo**: `services/llama_client.py`
 
 **Características:**
-- ✅ Modelo local (privacidade, LGPD)
-- ✅ Quantização 4bit (economia de memória)
-- ✅ Suporte a GPU/CPU/MPS (Apple Silicon)
+- ✅ Inferência em Nuvem (OpenRouter API) com modelo Llama 3.3 70B de alta qualidade
+- ✅ Resiliência com Fallbacks: Tenta o modelo padrão e passa por modelos gratuitos alternativos (Hermes 3, Gemma 2, Qwen 2.5, DeepSeek R1)
+- ✅ Retentativas com Tratamento de Rate-Limit: Lê o cabeçalho HTTP Retry-After e aguarda de forma inteligente
 - ✅ Parsing robusto de JSON
-- ✅ Fallback manual quando JSON falha
-- ✅ Prompts otimizados para texto jurídico
+- ✅ Fallback manual via Regex quando o JSON do LLM falha
+- ✅ Prompts otimizados para texto jurídico em português brasileiro
 
 **Configurações:**
 ```python
-llama_model_name: "meta-llama/Llama-3.1-8B-Instruct"
-llama_max_tokens: 512
-llama_temperature: 0.2
-llama_use_quantization: True
-llama_quantization_config: "4bit"
+openrouter_model: "openrouter/free"
+openrouter_api_key: str | None = None  # Configurada via .env
 ```
 
 **Prompt Engineering:**
-- Sistema instruído como "assistente especializado em traduzir documentos jurídicos"
-- Formato de resposta: JSON estruturado
+- Sistema instruído como "assistente especializado em traduzir documentos jurídicos brasileiro"
+- Formato de resposta: JSON com 3 chaves específicas ("what_happened", "what_it_means", "what_to_do_now")
 - Linguagem clara, sem jargões jurídicos
 
 **Tratamento de Erros:**
 1. Tentativa de extrair JSON da resposta
-2. Parse manual baseado em palavras-chave
-3. Fallback genérico com disclaimer
+2. Regex manual baseado nas chaves JSON se malformado
+3. Fallback semântico alternativo
+4. Fallback de rede caso todos os modelos na nuvem falhem
 
 **Requisitos de Hardware:**
-- Mínimo: 8GB RAM (com quantização 4bit)
-- Recomendado: GPU NVIDIA 6GB+ VRAM
-- Armazenamento: ~16GB para modelo
+- Mínimo: Qualquer máquina com acesso à internet (processamento de IA delegado para nuvem)
 
 ---
 
@@ -253,32 +250,32 @@ llama_quantization_config: "4bit"
 
 ---
 
-### 5. Armazenamento (Supabase)
+### 5. Armazenamento (SQLite Local)
 
 #### Implementação
 
 **Arquivo**: `storage/storage.py`
 
 **Funcionalidades:**
-- ✅ Salvamento assíncrono de registros
-- ✅ Retenção configurável (padrão: 30 dias)
-- ✅ Estrutura JSON para dados simplificados
+- ✅ Salvamento de registros localmente em arquivo `database.db`
+- ✅ Inicialização automática do banco e da tabela de processos na inicialização do backend
+- ✅ Retenção configurável (padrão: 30 dias) para conformidade com a LGPD
 
-**Estrutura de Dados:**
-```python
-{
-    "user_id": str | None,
-    "raw_text": str,          # Texto original extraído
-    "simplified": dict,       # Resposta estruturada
-    "retention_until": datetime,
-    "created_at": datetime
-}
+**Estrutura de Dados (Tabela `processes`):**
+```sql
+CREATE TABLE processes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id TEXT,
+    raw_text TEXT,
+    simplified TEXT, -- Armazenado como JSON string
+    retention_until TEXT,
+    created_at TEXT
+)
 ```
 
 **Limitações:**
-- Não há sistema de autenticação
-- Sem histórico de consultas por usuário
-- Sem queries complexas implementadas
+- Não há sistema de autenticação ativo no momento
+- Histórico de consultas salvo localmente mas sem rota de listagem no chatbot
 
 ---
 
@@ -423,101 +420,59 @@ a Defensoria Pública ou um advogado.
 
 ## 🚨 Gaps Críticos Identificados
 
-### 1. Funcionalidade Principal Ausente
+### 1. Segurança e Autenticação
 
-**Problema**: Consulta por número de processo não implementada
-- **Impacto**: Crítico (MVP incompleto)
-- **Solução**: Integração com APIs judiciais (CNJ, e-SAJ, TJs)
-- **Complexidade**: Alta (aspectos legais, autenticação, rate limits)
-
-### 2. Segurança e Autenticação
-
-**Problema**: Sem sistema de login/identificação
+**Problema**: Sem sistema de login/identificação de usuários
 - **Impacto**: Alto (conformidade LGPD, segurança)
-- **Solução**: Autenticação básica por telefone (WhatsApp)
+- **Solução**: Implementar autenticação básica por telefone com validação de código
 - **Complexidade**: Média
 
-### 3. Observabilidade
+### 2. Observabilidade
 
-**Problema**: Logs insuficientes, sem monitoramento robusto
+**Problema**: Logs de sistema em desenvolvimento básico
 - **Impacto**: Alto (produção)
-- **Solução**: Structured logging, métricas, alertas
+- **Solução**: Structured logging, envio de métricas de hit do TTS e da IA para painel administrativo
 - **Complexidade**: Média
 
-### 4. Histórico e UX
+### 3. Histórico e UX
 
-**Problema**: Usuários não acessam consultas anteriores
+**Problema**: Usuários não possuem rota ou visualização de consultas anteriores
 - **Impacto**: Médio (experiência do usuário)
-- **Solução**: Endpoints e interface de histórico
+- **Solução**: Endpoints e interface no chatbot de histórico persistido no SQLite
 - **Complexidade**: Baixa-Média
 
-### 5. Integração WhatsApp Completa
+### 4. Integração WhatsApp Completa
 
-**Problema**: Envio de áudio não implementado
-- **Impacto**: Médio (acessibilidade)
-- **Solução**: Implementar upload de mídia
+**Problema**: Envio de áudio (arquivos mp3/ogg) não implementado no Whatsapp conector
+- **Impacto**: Médio (acessibilidade no celular)
+- **Solução**: Implementar envio de mídia no whatsapp_adapter
 - **Complexidade**: Baixa
 
 ---
 
 ## 📋 Roadmap de Implementação
 
-### Fase 1: MVP Crítico (2-3 semanas)
+### Fase 1: MVP Crítico - Core & Integração CNJ (Concluído ✅)
+- **Consulta de Processos**: Conectada e operando via API Pública do DataJud/CNJ.
+- **Tradução com IA**: Migrado para OpenRouter Cloud (Llama 3.3 70B e lista inteligente de fallbacks).
+- **Acessibilidade**: Edge TTS Neural com cache local.
+- **Banco de Dados**: Transição para SQLite Local rápida e autônoma.
 
-**Prioridade: ALTA**
+### Fase 2: Segurança & Observabilidade (Próxima etapa - Alta Prioridade)
+1. **Sistema básico de autenticação**
+   - Autenticação por telefone ou token
+   - Confirmação de consentimento de uso de dados (LGPD)
+2. **Logs estruturados**
+   - Logging estruturado em formato JSON
+   - Métricas de uso de IA e cache do TTS para monitoramento
 
-1. **Consulta por número de processo**
-   - Integração básica com APIs judiciais
-   - Fallback para documentos pré-carregados
-   - Tratamento de erros robusto
-
-2. **Sistema básico de autenticação**
-   - Autenticação por telefone (WhatsApp)
-   - Validação LGPD
-   - Sessões básicas
-
-3. **Logs robustos**
-   - Structured logging (JSON)
-   - Métricas básicas (Prometheus/Metrics)
-   - Centralização de logs
-
-### Fase 2: Melhorias UX (3-4 semanas)
-
-**Prioridade: MÉDIA**
-
-1. **Histórico de consultas**
-   - Endpoints GET /history/{user_id}
-   - Interface de histórico
-   - Filtros e busca
-
-2. **Sistema de preferências**
-   - Configuração texto/áudio
-   - Preferências de voz
-   - Persistência no Supabase
-
-3. **Completar WhatsApp**
-   - Envio de áudio
-   - Webhook de recebimento
-   - Suporte a múltiplos tipos de mídia
-
-### Fase 3: Funcionalidades Avançadas (4-6 semanas)
-
-**Prioridade: BAIXA**
-
-1. **Monitoramento de processos**
-   - Notificações automáticas
-   - Tracking de andamentos
-   - Alertas de prazo
-
-2. **Sistema de feedback**
-   - Coleta de avaliações
-   - Melhoria contínua do modelo
-   - A/B testing
-
-3. **Otimizações**
-   - Cache de respostas
-   - Performance tuning
-   - Escalabilidade horizontal
+### Fase 3: Melhorias de UX e Canais (Média Prioridade)
+1. **Interface de histórico**
+   - Listagem de consultas anteriores com SQLite
+2. **Completar WhatsApp**
+   - Implementação de envio de áudio e recepção via webhook
+3. **Otimização de Prompt e Feedback**
+   - Fine-tuning leve ou prompts contextuais com feedback de operadores do Direito
 
 ---
 
@@ -620,12 +575,10 @@ O projeto **IADvogado** apresenta uma **base sólida** com as funcionalidades pr
 
 - **README Principal**: `/README.md`
 - **Análise Funcional**: `/docs/ANALISE_FUNCIONALIDADES.md`
-- **Setup Llama**: `/docs/LLAMA_SETUP.md`
 - **Setup Edge TTS**: `/docs/EDGE_TTS_SETUP.md`
 - **Documentação Técnica**: `/iadvogado/README.md`
 
 ---
 
-*Estudo realizado em: {{ data_atual }}*
-*Versão do Projeto: MVP 0.6*
-
+*Estudo atualizado em: 23 de Junho de 2026
+*Versão do Projeto: MVP 1.0 (Completamente Integrado com DataJud/OpenRouter)

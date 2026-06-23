@@ -37,13 +37,13 @@ iadvogado/
 ## Funcionalidades
 
 ### 🤖 IA e Processamento de Texto
-- **Llama 3.1 8B**: Simplificação de documentos jurídicos usando modelo local
-- **OCR**: Extração de texto de imagens usando Pytesseract
+- **Llama 3.3 70B (via OpenRouter)**: Simplificação de documentos jurídicos usando API baseada na nuvem com contingências de fallback gratuito
+- **OCR**: Extração de texto de imagens usando Pytesseract e leitura rápida de PDFs nativos usando pypdf
 - **TTS**: Conversão de texto em áudio usando Microsoft Edge TTS
 
 ### 📱 Integrações
-- **WhatsApp**: Envio de respostas via WhatsApp
-- **Supabase**: Armazenamento de dados e histórico
+- **WhatsApp**: Envio de respostas via WhatsApp (estrutura base configurada)
+- **SQLite**: Persistência ágil e leve de consultas de forma local em `database.db`
 
 ### 🔧 Configuração
 - Configuração via variáveis de ambiente
