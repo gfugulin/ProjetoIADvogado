@@ -1,30 +1,32 @@
-# Configurações do Supabase
-SUPABASE_URL=your_supabase_url_here
-SUPABASE_KEY=your_supabase_key_here
+# Configurações do IADvogado
 
-# Token do Hugging Face (necessário para usar Llama 3.1)
-# Obtenha em: https://huggingface.co/settings/tokens
-# Aceite os termos em: https://huggingface.co/meta-llama/Llama-3.1-8B-Instruct
-HUGGING_FACE_HUB_TOKEN=your_huggingface_token_here
+# Configurações da API de IA (OpenRouter Cloud)
+# Obtenha em: https://openrouter.ai/keys
+OPENROUTER_API_KEY=your_openrouter_api_key_here
+# Modelo padrão (pode ser "openrouter/free" para modelos gratuitos rotativos)
+OPENROUTER_MODEL=openrouter/free
 
-# Configurações do WhatsApp (opcional)
+# Configurações do DataJud (CNJ - Conselho Nacional de Justiça)
+# Necessário para busca processual real por número de processo
+DATAJUD_API_KEY=your_datajud_api_key_here
+
+# Configurações do WhatsApp (opcional, para envio das análises)
 WHATSAPP_API_URL=your_whatsapp_api_url_here
 WHATSAPP_API_TOKEN=your_whatsapp_token_here
 
-# Configurações do Llama 3.1 (opcional - usa valores padrão se não especificado)
-LLAMA_MODEL_NAME=meta-llama/Llama-3.1-8B-Instruct
-LLAMA_DEVICE=auto
-LLAMA_MAX_TOKENS=512
-LLAMA_TEMPERATURE=0.2
-LLAMA_USE_QUANTIZATION=true
-LLAMA_QUANTIZATION_CONFIG=4bit
+# Configurações de Banco de Dados Local (SQLite - database.db é criado na raiz)
+# (Opcional) Configurações de Supabase caso queira usar armazenamento em nuvem no futuro
+SUPABASE_URL=your_supabase_url_here
+SUPABASE_KEY=your_supabase_key_here
 
-# Outras configurações
-TTS_PROVIDER=edge
+# Retenção de dados (dias até a expiração automática dos registros para LGPD)
 DATA_RETENTION_DAYS=30
+
+# Motor de extração de texto (OCR)
 OCR_ENGINE=pytesseract
 
-# Configurações do Edge TTS
+# Configurações de Voz (Edge TTS)
+TTS_PROVIDER=edge
 TTS_VOICE=pt-BR-FranciscaNeural
 TTS_RATE=+5%
 TTS_VOLUME=+0%
@@ -32,3 +34,12 @@ TTS_PITCH=+2Hz
 TTS_USE_SSML=true
 TTS_CACHE_ENABLED=true
 TTS_CACHE_TTL=3600
+
+# [DEPRECATED] Configurações legadas para Llama local (não mais necessárias)
+# HUGGING_FACE_HUB_TOKEN=your_huggingface_token_here
+# LLAMA_MODEL_NAME=meta-llama/Llama-3.1-8B-Instruct
+# LLAMA_DEVICE=auto
+# LLAMA_MAX_TOKENS=512
+# LLAMA_TEMPERATURE=0.2
+# LLAMA_USE_QUANTIZATION=true
+# LLAMA_QUANTIZATION_CONFIG=4bit

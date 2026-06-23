@@ -50,6 +50,20 @@ async def root():
         return FileResponse(chatbot_path)
     return {"message": "IADvogado API", "chatbot": "/static/chatbot.html"}
 
+@app.get("/sw.js")
+async def get_sw():
+    sw_path = os.path.join(static_dir, "sw.js")
+    if os.path.exists(sw_path):
+        return FileResponse(sw_path, media_type="application/javascript")
+    return JSONResponse({"error": "Service worker not found"}, status_code=404)
+
+@app.get("/manifest.json")
+async def get_manifest():
+    manifest_path = os.path.join(static_dir, "manifest.json")
+    if os.path.exists(manifest_path):
+        return FileResponse(manifest_path, media_type="application/json")
+    return JSONResponse({"error": "Manifest not found"}, status_code=404)
+
 @app.post('/upload')
 async def upload_document(
     background: BackgroundTasks,
@@ -57,6 +71,7 @@ async def upload_document(
     phone_number: str | None = Form(None),
     file: UploadFile = File(...),
     as_audio: bool = Form(False),
+    translation_level: str | None = Form(None),
 ):
     contents = await file.read()
     try:
@@ -68,7 +83,7 @@ async def upload_document(
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"OCR failed: {e}")
 
-    simplified = await simplify_text(raw_text)
+    simplified = await simplify_text(raw_text, level=translation_level)
     disclaimer = make_disclaimer()
     payload_text = (
         f"O que aconteceu:\n{simplified['what_happened']}\n\n"
@@ -120,7 +135,8 @@ async def process_by_number(
     process_number: str = Form(...), 
     user_id: str | None = Form(None), 
     phone_number: str | None = Form(None), 
-    as_audio: bool = Form(False)
+    as_audio: bool = Form(False),
+    translation_level: str | None = Form(None),
 ):
     """
     Consulta o processo na API Pública do DataJud, obtém os andamentos
@@ -138,7 +154,7 @@ async def process_by_number(
     
     # 2. Simplificar o texto retornado usando o LLM Local
     try:
-        simplified = await simplify_text(raw_text)
+        simplified = await simplify_text(raw_text, level=translation_level)
     except Exception as e:
         logger.error(f"Erro na simplificação via LLM: {e}")
         raise HTTPException(status_code=500, detail="Erro ao simplificar os andamentos do processo.")

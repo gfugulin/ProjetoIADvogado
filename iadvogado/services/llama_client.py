@@ -30,18 +30,35 @@ from ..config.config import settings
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-SYSTEM_PROMPT = (
-    "Você é um assistente jurídico brasileiro especializado em traduzir documentos "
-    "jurídicos para linguagem clara e acessível ao cidadão comum.\n\n"
-    "Regras obrigatórias:\n"
-    "1. Responda APENAS com um JSON válido, sem texto antes ou depois\n"
-    "2. O JSON deve ter exatamente 3 chaves: \"what_happened\", \"what_it_means\", \"what_to_do_now\"\n"
-    "3. Use linguagem simples, como se explicasse para alguém sem formação jurídica\n"
-    "4. Seja específico — mencione valores, datas, nomes e prazos presentes no documento\n"
-    "5. Em \"what_to_do_now\", dê orientações práticas e concretas\n\n"
-    "Exemplo de formato:\n"
-    "{\"what_happened\": \"...\", \"what_it_means\": \"...\", \"what_to_do_now\": \"...\"}"
-)
+def get_system_prompt(level: str | None = None) -> str:
+    """Retorna o prompt do sistema apropriado com base no nível cognitivo selecionado"""
+    base_prompt = (
+        "Você é um assistente jurídico brasileiro especializado em traduzir documentos "
+        "jurídicos para linguagem clara e acessível.\n\n"
+        "Regras obrigatórias:\n"
+        "1. Responda APENAS com um JSON válido, sem texto antes ou depois\n"
+        "2. O JSON deve ter exatamente 3 chaves: \"what_happened\", \"what_it_means\", \"what_to_do_now\"\n"
+        "3. Seja específico — mencione valores, datas, nomes e prazos presentes no documento\n"
+        "4. Em \"what_to_do_now\", dê orientações práticas e concretas\n"
+    )
+
+    if level == "easy":
+        level_rules = (
+            "5. Use a LINGUAGEM MAIS SIMPLES POSSÍVEL. Evite QUALQUER jargão, latim ou termo formal.\n"
+            "6. Explique como se estivesse conversando com uma pessoa de baixíssima escolaridade. Use frases curtas, analogias cotidianas e vocabulário extremamente simples."
+        )
+    elif level == "technical":
+        level_rules = (
+            "5. Mantenha os TERMOS JURÍDICOS ORIGINAIS relevantes, mas explique a fundamentação teórica de cada um de forma clara e estruturada.\n"
+            "6. Ideal para estudantes ou assistentes sociais que precisam entender os artigos citados e o embasamento legal específico no documento."
+        )
+    else: # normal / default
+        level_rules = (
+            "5. Use linguagem simples e direta, como se explicasse para alguém sem formação jurídica.\n"
+            "6. Explique brevemente os termos técnicos essenciais quando surgirem no texto."
+        )
+
+    return f"{base_prompt}{level_rules}\n\nExemplo de formato:\n{{\"what_happened\": \"...\", \"what_it_means\": \"...\", \"what_to_do_now\": \"...\"}}"
 
 class OpenRouterClient:
     """Cliente leve para consumir modelos em nuvem via OpenRouter"""
@@ -50,12 +67,12 @@ class OpenRouterClient:
         self.api_url = "https://openrouter.ai/api/v1/chat/completions"
         self.model = settings.openrouter_model
         
-    async def simplify_text(self, text: str) -> Dict[str, str]:
+    async def simplify_text(self, text: str, level: str | None = None) -> Dict[str, str]:
         if not settings.openrouter_api_key:
             logger.error("Chave de API do OpenRouter não configurada.")
             return self._fallback_response(text)
             
-        logger.info(f"Enviando documento de {len(text)} caracteres via OpenRouter...")
+        logger.info(f"Enviando documento de {len(text)} caracteres (Nível: {level}) via OpenRouter...")
         
         headers = {
             "Authorization": f"Bearer {settings.openrouter_api_key}",
@@ -66,7 +83,7 @@ class OpenRouterClient:
         
         payload = {
             "messages": [
-                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "system", "content": get_system_prompt(level)},
                 {"role": "user", "content": f"Simplifique este texto jurídico:\n\n{text}"}
             ]
         }
@@ -198,6 +215,6 @@ class OpenRouterClient:
 # Instância global para manter compatibilidade com o código antigo
 llama_client = OpenRouterClient()
 
-async def simplify_text(text: str) -> Dict[str, str]:
+async def simplify_text(text: str, level: str | None = None) -> Dict[str, str]:
     """Interface principal, agora rodando via OpenRouter de forma 100% assíncrona"""
-    return await llama_client.simplify_text(text)
+    return await llama_client.simplify_text(text, level)
